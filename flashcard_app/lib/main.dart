@@ -112,8 +112,12 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    _termControllers.forEach((controller) => controller.dispose());
-    _definitionControllers.forEach((controller) => controller.dispose());
+    for (var controller in _termControllers) {
+      controller.dispose();
+    }
+    for (var controller in _definitionControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -131,7 +135,7 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
             children: [
               TextField(
                 controller: _titleController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Title',
                   border: OutlineInputBorder(),
                 ),
@@ -148,7 +152,7 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
                         controller: _termControllers[index],
                         decoration: InputDecoration(
                           labelText: 'Term ${index + 1}',
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -156,7 +160,7 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
                         controller: _definitionControllers[index],
                         decoration: InputDecoration(
                           labelText: 'Definition ${index + 1}',
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -202,11 +206,11 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
     // Redirect to FlashcardsScreen
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => FlashcardsScreen()),
+      MaterialPageRoute(builder: (context) => const FlashcardsScreen()),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Flashcard set saved successfully')),
+      const SnackBar(content: Text('Flashcard set saved successfully')),
     );
   }
 }
