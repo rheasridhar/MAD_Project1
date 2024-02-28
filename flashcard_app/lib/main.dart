@@ -39,18 +39,19 @@ class MyHomePage extends StatelessWidget {
             const Text(
               'Welcome to Flashcard App!',
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CreateSetScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const CreateSetScreen()),
                 );
               },
-              child: SizedBox(
+              child: const SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(20.0),
                   child: Center(
                     child: Text(
                       'Add',
@@ -60,18 +61,19 @@ class MyHomePage extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => FlashcardsScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const FlashcardsScreen()),
                 );
               },
-              child: SizedBox(
+              child: const SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(20.0),
                   child: Center(
                     child: Text(
                       'Study',
@@ -89,13 +91,15 @@ class MyHomePage extends StatelessWidget {
 }
 
 class CreateSetScreen extends StatelessWidget {
+  const CreateSetScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create Set'),
+        title: const Text('Create Set'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('This is the Create Set screen.'),
       ),
     );
@@ -103,13 +107,15 @@ class CreateSetScreen extends StatelessWidget {
 }
 
 class FlashcardsScreen extends StatelessWidget {
+  const FlashcardsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flashcards'),
+        title: const Text('Flashcards'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('This is the Flashcards screen.'),
       ),
     );
