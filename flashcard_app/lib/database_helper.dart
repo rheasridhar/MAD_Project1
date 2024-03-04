@@ -72,6 +72,8 @@ FOREIGN KEY ($columnFlashcardSetId) REFERENCES $tableFlashcardSets($columnId)
         where: '$columnFlashcardSetId = ?', whereArgs: [flashcardSetId]);
   }
 
+  
+
 Future<List<Map<String, dynamic>>> queryAllFlashcardSets() async {
     return await _db.query(tableFlashcardSets);
   }
