@@ -267,7 +267,6 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                   },
                   onDelete: () async {
                     await _deleteFlashcardSet(context, flashcardSetId);
-                    // Reload flashcard sets after deletion
                     setState(() {
                       _flashcardSetsFuture = dbHelper.queryAllFlashcardSets();
                     });
@@ -365,29 +364,55 @@ class FlashcardSetButton extends StatelessWidget {
   }
 
   Widget _buildOptionButton(BuildContext context, String text) {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.pop(context);
+  return ElevatedButton(
+    onPressed: () {
+      Navigator.pop(context);
 
-        if (text == 'Practice') {
-          // practice screen
-        } else if (text == 'Quiz') {
-          // quiz screen
-        } else if (text == 'Edit') {
-          // edit screen
-        } else if (text == 'Delete') {
-          onDelete();
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.all(20.0),
-        minimumSize: const Size(double.infinity, 60.0),
-      ),
-      child: Text(text),
-    );
-  }
+      if (text == 'Practice') {
+        // practice screen
+      } else if (text == 'Quiz') {
+        // quiz screen
+      } else if (text == 'Edit') {
+        // edit screen
+      } else if (text == 'Delete') {
+        _showDeleteConfirmationDialog(context);
+      }
+    },
+    style: ElevatedButton.styleFrom(
+      padding: const EdgeInsets.all(20.0),
+      minimumSize: const Size(double.infinity, 60.0),
+    ),
+    child: Text(text),
+  );
 }
 
+void _showDeleteConfirmationDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: const Text('Are you sure you want to delete this flashcard set?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); 
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              onDelete();
+              Navigator.of(context).pop(); 
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      );
+    },
+  );
+}
+}
 class FlashcardSetScreen extends StatelessWidget {
   final String setTitle;
   final int flashcardSetId;
