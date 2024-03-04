@@ -267,18 +267,20 @@ class FlashcardSetButton extends StatelessWidget {
   final int flashcardSetId;
   final VoidCallback onPressed;
 
-  const FlashcardSetButton({
+  const FlashcardSetButton({super.key, 
     required this.setTitle,
     required this.flashcardSetId,
     required this.onPressed,
   });
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0), // Adjust the vertical padding here
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: () {
+          _showOptionsPopup(context);
+        },
         child: SizedBox(
           width: double.infinity,
           child: Padding(
@@ -307,13 +309,66 @@ class FlashcardSetButton extends StatelessWidget {
       ),
     );
   }
+
+  void _showOptionsPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(setTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildOptionButton(context, 'Practice'),
+              const SizedBox(height: 10),
+              _buildOptionButton(context, 'Quiz'),
+              const SizedBox(height: 10),
+              _buildOptionButton(context, 'Edit'),
+              const SizedBox(height: 10),
+              _buildOptionButton(context, 'Delete'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOptionButton(BuildContext context, String text) {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.pop(context); 
+       
+        if (text == 'Practice') {
+          // practice screen
+        } else if (text == 'Quiz') {
+          // quiz screen
+        } else if (text == 'Edit') {
+          // edit screen
+        } else if (text == 'Delete') {
+          // handle delete
+          _deleteSet(context);
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.all(20.0), 
+        minimumSize: const Size(double.infinity, 60.0), 
+      ),
+      child: Text(text),
+    );
+  }
+
+  void _deleteSet(BuildContext context) async {
+   //delete logic, add delete db logic to db helper
+  }
 }
+
+
 
 class FlashcardSetScreen extends StatelessWidget {
   final String setTitle;
   final int flashcardSetId;
 
-  const FlashcardSetScreen({
+  const FlashcardSetScreen({super.key, 
     required this.setTitle,
     required this.flashcardSetId,
   });
