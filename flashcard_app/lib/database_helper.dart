@@ -83,5 +83,20 @@ Future<List<Map<String, dynamic>>> queryAllFlashcardSets() async {
     );
     return Sqflite.firstIntValue(result) ?? 0;
   }
+
+  Future<void> deleteFlashcardSet(int flashcardSetId) async {
+  await _db.delete(
+    tableFlashcardSets,
+    where: '$columnId = ?',
+    whereArgs: [flashcardSetId],
+  );
+
+  await _db.delete(
+    tableFlashcards,
+    where: '$columnFlashcardSetId = ?',
+    whereArgs: [flashcardSetId],
+  );
+}
+
   // Additional methods for managing flashcard sets can be added here
 }

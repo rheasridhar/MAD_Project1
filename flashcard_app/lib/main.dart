@@ -215,8 +215,21 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
   }
 }
 
-class FlashcardsScreen extends StatelessWidget {
+class FlashcardsScreen extends StatefulWidget {
   const FlashcardsScreen({Key? key}) : super(key: key);
+
+  @override
+  _FlashcardsScreenState createState() => _FlashcardsScreenState();
+}
+
+class _FlashcardsScreenState extends State<FlashcardsScreen> {
+  late Future<List<Map<String, dynamic>>> _flashcardSetsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _flashcardSetsFuture = dbHelper.queryAllFlashcardSets();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +238,7 @@ class FlashcardsScreen extends StatelessWidget {
         title: const Text('Flashcards'),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: dbHelper.queryAllFlashcardSets(),
+        future: _flashcardSetsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -252,6 +265,13 @@ class FlashcardsScreen extends StatelessWidget {
                       ),
                     );
                   },
+                  onDelete: () async {
+                    await _deleteFlashcardSet(context, flashcardSetId);
+                    // Reload flashcard sets after deletion
+                    setState(() {
+                      _flashcardSetsFuture = dbHelper.queryAllFlashcardSets();
+                    });
+                  },
                 );
               },
             );
@@ -260,18 +280,29 @@ class FlashcardsScreen extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _deleteFlashcardSet(BuildContext context, int flashcardSetId) async {
+    await dbHelper.deleteFlashcardSet(flashcardSetId);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Flashcard set deleted')),
+    );
+  }
 }
+
 
 class FlashcardSetButton extends StatelessWidget {
   final String setTitle;
   final int flashcardSetId;
   final VoidCallback onPressed;
+  final VoidCallback onDelete;
 
-  const FlashcardSetButton({super.key, 
+  const FlashcardSetButton({
+    Key? key,
     required this.setTitle,
     required this.flashcardSetId,
     required this.onPressed,
-  });
+    required this.onDelete,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -336,8 +367,8 @@ class FlashcardSetButton extends StatelessWidget {
   Widget _buildOptionButton(BuildContext context, String text) {
     return ElevatedButton(
       onPressed: () {
-        Navigator.pop(context); 
-       
+        Navigator.pop(context);
+
         if (text == 'Practice') {
           // practice screen
         } else if (text == 'Quiz') {
@@ -345,33 +376,27 @@ class FlashcardSetButton extends StatelessWidget {
         } else if (text == 'Edit') {
           // edit screen
         } else if (text == 'Delete') {
-          // handle delete
-          _deleteSet(context);
+          onDelete();
         }
       },
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.all(20.0), 
-        minimumSize: const Size(double.infinity, 60.0), 
+        padding: const EdgeInsets.all(20.0),
+        minimumSize: const Size(double.infinity, 60.0),
       ),
       child: Text(text),
     );
   }
-
-  void _deleteSet(BuildContext context) async {
-   //delete logic, add delete db logic to db helper
-  }
 }
-
-
 
 class FlashcardSetScreen extends StatelessWidget {
   final String setTitle;
   final int flashcardSetId;
 
-  const FlashcardSetScreen({super.key, 
+  const FlashcardSetScreen({
+    Key? key,
     required this.setTitle,
     required this.flashcardSetId,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
