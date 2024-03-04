@@ -34,10 +34,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Practice'),
+        title: const Text('Practice'),
       ),
       body: _flashcards.isEmpty
-          ? Center(
+          ? const Center(
               child: Text('No flashcards available.'),
             )
           : Center(
@@ -59,12 +59,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(
-              icon: Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back),
               onPressed: _previousCard,
             ),
             Text('${_currentIndex + 1} of ${_flashcards.length}'),
             IconButton(
-              icon: Icon(Icons.arrow_forward),
+              icon: const Icon(Icons.arrow_forward),
               onPressed: _nextCard,
             ),
           ],
@@ -85,14 +85,14 @@ class _PracticeScreenState extends State<PracticeScreen> {
             color: Colors.grey.withOpacity(0.5),
             spreadRadius: 2,
             blurRadius: 7,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Center(
         child: Text(
           text,
-          style: TextStyle(fontSize: 24.0),
+          style: const TextStyle(fontSize: 24.0),
         ),
       ),
     );
