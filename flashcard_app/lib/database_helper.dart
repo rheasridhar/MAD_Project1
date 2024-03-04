@@ -72,5 +72,16 @@ FOREIGN KEY ($columnFlashcardSetId) REFERENCES $tableFlashcardSets($columnId)
         where: '$columnFlashcardSetId = ?', whereArgs: [flashcardSetId]);
   }
 
+Future<List<Map<String, dynamic>>> queryAllFlashcardSets() async {
+    return await _db.query(tableFlashcardSets);
+  }
+
+  Future<int> countFlashcardsInSet(int flashcardSetId) async {
+    final result = await _db.rawQuery(
+      'SELECT COUNT(*) FROM $tableFlashcards WHERE $columnFlashcardSetId = ?',
+      [flashcardSetId],
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
   // Additional methods for managing flashcard sets can be added here
 }

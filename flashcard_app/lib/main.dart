@@ -216,7 +216,7 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
 }
 
 class FlashcardsScreen extends StatelessWidget {
-  const FlashcardsScreen({super.key});
+  const FlashcardsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -224,8 +224,108 @@ class FlashcardsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Flashcards'),
       ),
-      body: const Center(
-        child: Text('This is the Flashcards screen.'),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: dbHelper.queryAllFlashcardSets(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final flashcardSets = snapshot.data!;
+            return ListView.builder(
+              itemCount: flashcardSets.length,
+              itemBuilder: (context, index) {
+                final setTitle = flashcardSets[index][DatabaseHelper.columnSetTitle];
+                final flashcardSetId = flashcardSets[index][DatabaseHelper.columnId];
+                return FlashcardSetButton(
+                  setTitle: setTitle,
+                  flashcardSetId: flashcardSetId,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FlashcardSetScreen(
+                          setTitle: setTitle,
+                          flashcardSetId: flashcardSetId,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+class FlashcardSetButton extends StatelessWidget {
+  final String setTitle;
+  final int flashcardSetId;
+  final VoidCallback onPressed;
+
+  const FlashcardSetButton({
+    required this.setTitle,
+    required this.flashcardSetId,
+    required this.onPressed,
+  });
+
+ @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0), // Adjust the vertical padding here
+      child: ElevatedButton(
+        onPressed: onPressed,
+        child: SizedBox(
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(setTitle),
+                FutureBuilder<int>(
+                  future: dbHelper.countFlashcardsInSet(flashcardSetId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox();
+                    } else if (snapshot.hasError) {
+                      return const SizedBox();
+                    } else {
+                      final count = snapshot.data!;
+                      return Text('$count terms');
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FlashcardSetScreen extends StatelessWidget {
+  final String setTitle;
+  final int flashcardSetId;
+
+  const FlashcardSetScreen({
+    required this.setTitle,
+    required this.flashcardSetId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(setTitle),
+      ),
+      body: Center(
+        child: Text('Flashcards for $setTitle'),
       ),
     );
   }
