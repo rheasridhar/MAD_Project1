@@ -23,6 +23,7 @@ class _EditSetScreenState extends State<EditSetScreen> {
   final TextEditingController _titleController = TextEditingController();
   final List<TextEditingController> _termControllers = [];
   final List<TextEditingController> _definitionControllers = [];
+  bool _changesSaved = false;
 
   @override
   void initState() {
@@ -52,22 +53,23 @@ class _EditSetScreenState extends State<EditSetScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Set'),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
+    return WillPopScope(
+      onWillPop: () => _onWillPop(context),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Edit Set'),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
                 controller: _titleController,
                 onChanged: (value) {
-                  // Update the title controller when the text changes
                   setState(() {
                     _titleController.text = value;
+                    _changesSaved = false;
                   });
                 },
                 decoration: const InputDecoration(
@@ -75,45 +77,86 @@ class _EditSetScreenState extends State<EditSetScreen> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 20),
-              ListView.builder(
-                shrinkWrap: true,
+            ),
+            Expanded(
+              child: ListView.builder(
                 itemCount: _termControllers.length,
                 itemBuilder: (context, index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        controller: _termControllers[index],
-                        decoration: InputDecoration(
-                          labelText: 'Term ${index + 1}',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: _definitionControllers[index],
-                        decoration: InputDecoration(
-                          labelText: 'Definition ${index + 1}',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  );
+                  return _buildCard(index);
                 },
               ),
-              ElevatedButton(
-                onPressed: _addFlashcard,
-                child: const Text('Add Flashcard'),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _addFlashcard,
+                    child: const Text('Add Flashcard'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _saveChanges();
+                      _changesSaved = true;
+                    },
+                    child: const Text('Save Changes'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveChanges,
-                child: const Text('Save Changes'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(int index) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _termControllers[index],
+                onChanged: (value) {
+                  setState(() {
+                    _changesSaved = false;
+                  });
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Term',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _definitionControllers[index],
+                onChanged: (value) {
+                  setState(() {
+                    _changesSaved = false;
+                  });
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Definition',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  _deleteFlashcard(index);
+                },
+                child: const Text('Delete'),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -123,11 +166,61 @@ class _EditSetScreenState extends State<EditSetScreen> {
     setState(() {
       _termControllers.add(TextEditingController());
       _definitionControllers.add(TextEditingController());
+      _changesSaved = false;
     });
   }
 
- void _saveChanges() async {
+  void _deleteFlashcard(int index) {
+    setState(() {
+      _termControllers.removeAt(index);
+      _definitionControllers.removeAt(index);
+      _changesSaved = false;
+    });
+  }
 
+  Future<bool> _onWillPop(BuildContext context) async {
+    if (!_changesSaved && _changesMade()) {
+      return await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Discard Changes?'),
+            content: Text('Are you sure you want to leave without saving changes?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: Text('Yes'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: Text('No'),
+              ),
+            ],
+          );
+        },
+      ) ?? false;
+    }
+    return true;
+  }
+
+  bool _changesMade() {
+    if (_titleController.text != widget.initialTitle) {
+      return true;
+    }
+    for (var i = 0; i < _termControllers.length; i++) {
+      if (_termControllers[i].text != '' || _definitionControllers[i].text != '') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+ void _saveChanges() async {
   final setTitle = _titleController.text;
   await widget.dbHelper.updateFlashcardSet(widget.flashcardSetId, setTitle);
 
@@ -146,6 +239,12 @@ class _EditSetScreenState extends State<EditSetScreen> {
         await widget.dbHelper.insertFlashcard(widget.flashcardSetId, term, definition);
       }
     }
+  }
+
+  // Delete any remaining flashcards that were removed from the screen
+  for (int i = _termControllers.length; i < flashcards.length; i++) {
+    final flashcardId = flashcards[i][DatabaseHelper.columnId];
+    await widget.dbHelper.deleteFlashcard(widget.flashcardSetId, flashcardId); // Provide both flashcardSetId and flashcardId
   }
 
   ScaffoldMessenger.of(context).showSnackBar(
