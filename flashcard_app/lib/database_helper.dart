@@ -71,8 +71,14 @@ FOREIGN KEY ($columnFlashcardSetId) REFERENCES $tableFlashcardSets($columnId)
     return await _db.query(tableFlashcards,
         where: '$columnFlashcardSetId = ?', whereArgs: [flashcardSetId]);
   }
-
-  
+Future<Map<String, dynamic>> queryFlashcardSet(int flashcardSetId) async {
+  final List<Map<String, dynamic>> result = await _db.query(
+    tableFlashcardSets,
+    where: '$columnId = ?',
+    whereArgs: [flashcardSetId],
+  );
+  return result.isNotEmpty ? result.first : {};
+}
 
 Future<List<Map<String, dynamic>>> queryAllFlashcardSets() async {
     return await _db.query(tableFlashcardSets);
@@ -99,6 +105,33 @@ Future<List<Map<String, dynamic>>> queryAllFlashcardSets() async {
     whereArgs: [flashcardSetId],
   );
 }
+
+Future<void> updateFlashcard(int flashcardSetId, int flashcardId, String term, String definition) async {
+  final row = {
+    columnTerm: term,
+    columnDefinition: definition,
+  };
+  await _db.update(
+    tableFlashcards,
+    row,
+    where: '$columnFlashcardSetId = ? AND $columnId = ?',
+    whereArgs: [flashcardSetId, flashcardId],
+  );
+}
+
+
+Future<void> updateFlashcardSet(int flashcardSetId, String setTitle) async {
+  final row = {
+    columnSetTitle: setTitle,
+  };
+  await _db.update(
+    tableFlashcardSets,
+    row,
+    where: '$columnId = ?',
+    whereArgs: [flashcardSetId],
+  );
+}
+
 
   // Additional methods for managing flashcard sets can be added here
 }

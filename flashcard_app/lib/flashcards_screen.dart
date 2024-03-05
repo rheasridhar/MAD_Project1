@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
 import 'practice_screen.dart';
+import 'edit_screen.dart';
 
 class FlashcardsScreen extends StatefulWidget {
-  final DatabaseHelper dbHelper; // Add dbHelper parameter
+  final DatabaseHelper dbHelper;
 
   const FlashcardsScreen({Key? key, required this.dbHelper}) : super(key: key);
 
@@ -17,7 +18,13 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
   @override
   void initState() {
     super.initState();
-    _flashcardSetsFuture = widget.dbHelper.queryAllFlashcardSets(); // Access dbHelper from widget
+    _reloadFlashcardSets();
+  }
+
+  void _reloadFlashcardSets() {
+    setState(() {
+      _flashcardSetsFuture = widget.dbHelper.queryAllFlashcardSets();
+    });
   }
 
   @override
@@ -43,13 +50,13 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                 return FlashcardSetButton(
                   setTitle: setTitle,
                   flashcardSetId: flashcardSetId,
-                  dbHelper: widget.dbHelper, // Pass dbHelper to FlashcardSetButton
-                  onPressed: () {},
+                  dbHelper: widget.dbHelper,
+                  onPressed: () {
+                    _navigateToEditSetScreen(context, flashcardSetId, setTitle);
+                  },
                   onDelete: () async {
                     await _deleteFlashcardSet(context, flashcardSetId);
-                    setState(() {
-                      _flashcardSetsFuture = widget.dbHelper.queryAllFlashcardSets(); // Access dbHelper from widget
-                    });
+                    _reloadFlashcardSets(); 
                   },
                 );
               },
@@ -61,17 +68,34 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
   }
 
   Future<void> _deleteFlashcardSet(BuildContext context, int flashcardSetId) async {
-    await widget.dbHelper.deleteFlashcardSet(flashcardSetId); // Access dbHelper from widget
+    await widget.dbHelper.deleteFlashcardSet(flashcardSetId);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Flashcard set deleted')),
     );
   }
+
+  void _navigateToEditSetScreen(BuildContext context, int flashcardSetId, String setTitle) async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => EditSetScreen(
+        flashcardSetId: flashcardSetId,
+        dbHelper: widget.dbHelper,
+        initialTitle: setTitle,
+        onTitleUpdated: (newTitle) {
+          _reloadFlashcardSets();
+        },
+      ),
+    ),
+  );
+}
+
 }
 
 class FlashcardSetButton extends StatelessWidget {
   final String setTitle;
   final int flashcardSetId;
-  final DatabaseHelper dbHelper; // Add dbHelper parameter
+  final DatabaseHelper dbHelper;
   final VoidCallback onPressed;
   final VoidCallback onDelete;
 
@@ -87,7 +111,7 @@ class FlashcardSetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
       child: ElevatedButton(
         onPressed: () {
           _showOptionsPopup(context);
@@ -101,7 +125,7 @@ class FlashcardSetButton extends StatelessWidget {
               children: [
                 Text(setTitle),
                 FutureBuilder<int>(
-                  future: dbHelper.countFlashcardsInSet(flashcardSetId), // Access dbHelper passed from constructor
+                  future: dbHelper.countFlashcardsInSet(flashcardSetId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const SizedBox();
@@ -157,9 +181,9 @@ class FlashcardSetButton extends StatelessWidget {
             ),
           );
         } else if (text == 'Quiz') {
-          // quiz screen
+          // Navigate to quiz screen
         } else if (text == 'Edit') {
-          // edit screen
+          onPressed();
         } else if (text == 'Delete') {
           _showDeleteConfirmationDialog(context);
         }
