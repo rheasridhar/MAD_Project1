@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'database_helper.dart';
 import 'practice_screen.dart';
 import 'edit_screen.dart';
+import 'quiz_screen.dart';
 
 class FlashcardsScreen extends StatefulWidget {
   final DatabaseHelper dbHelper;
@@ -45,8 +46,10 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
             return ListView.builder(
               itemCount: flashcardSets.length,
               itemBuilder: (context, index) {
-                final setTitle = flashcardSets[index][DatabaseHelper.columnSetTitle];
-                final flashcardSetId = flashcardSets[index][DatabaseHelper.columnId];
+                final setTitle =
+                    flashcardSets[index][DatabaseHelper.columnSetTitle];
+                final flashcardSetId =
+                    flashcardSets[index][DatabaseHelper.columnId];
                 return FlashcardSetButton(
                   setTitle: setTitle,
                   flashcardSetId: flashcardSetId,
@@ -56,7 +59,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                   },
                   onDelete: () async {
                     await _deleteFlashcardSet(context, flashcardSetId);
-                    _reloadFlashcardSets(); 
+                    _reloadFlashcardSets();
                   },
                 );
               },
@@ -67,29 +70,30 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
     );
   }
 
-  Future<void> _deleteFlashcardSet(BuildContext context, int flashcardSetId) async {
+  Future<void> _deleteFlashcardSet(
+      BuildContext context, int flashcardSetId) async {
     await widget.dbHelper.deleteFlashcardSet(flashcardSetId);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Flashcard set deleted')),
     );
   }
 
-  void _navigateToEditSetScreen(BuildContext context, int flashcardSetId, String setTitle) async {
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => EditSetScreen(
-        flashcardSetId: flashcardSetId,
-        dbHelper: widget.dbHelper,
-        initialTitle: setTitle,
-        onTitleUpdated: (newTitle) {
-          _reloadFlashcardSets();
-        },
+  void _navigateToEditSetScreen(
+      BuildContext context, int flashcardSetId, String setTitle) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditSetScreen(
+          flashcardSetId: flashcardSetId,
+          dbHelper: widget.dbHelper,
+          initialTitle: setTitle,
+          onTitleUpdated: (newTitle) {
+            _reloadFlashcardSets();
+          },
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 }
 
 class FlashcardSetButton extends StatelessWidget {
@@ -177,11 +181,12 @@ class FlashcardSetButton extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PracticeScreen(flashcardSetId: flashcardSetId),
+              builder: (context) =>
+                  PracticeScreen(flashcardSetId: flashcardSetId),
             ),
           );
         } else if (text == 'Quiz') {
-          // Navigate to quiz screen
+          _navigateToQuizScreen(context, flashcardSetId);
         } else if (text == 'Edit') {
           onPressed();
         } else if (text == 'Delete') {
@@ -196,13 +201,28 @@ class FlashcardSetButton extends StatelessWidget {
     );
   }
 
+  void _navigateToQuizScreen(BuildContext context, int flashcardSetId) async {
+    List<Map<String, dynamic>> flashcards =
+        await dbHelper.queryAllFlashcardsInSet(flashcardSetId);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizScreen(
+          flashcards: flashcards,
+        ),
+      ),
+    );
+  }
+
   void _showDeleteConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this flashcard set?'),
+          content:
+              const Text('Are you sure you want to delete this flashcard set?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {

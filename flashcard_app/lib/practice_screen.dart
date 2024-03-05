@@ -5,7 +5,8 @@ import 'database_helper.dart';
 class PracticeScreen extends StatefulWidget {
   final int flashcardSetId;
 
-  const PracticeScreen({Key? key, required this.flashcardSetId}) : super(key: key);
+  const PracticeScreen({Key? key, required this.flashcardSetId})
+      : super(key: key);
 
   @override
   _PracticeScreenState createState() => _PracticeScreenState();
@@ -75,8 +76,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   Widget _buildCard(String text) {
     return Container(
-      width: 320, 
-      height: 560, 
+      width: 320,
+      height: 560,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.0),
         color: Colors.white,
@@ -100,7 +101,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   void _previousCard() {
     setState(() {
-      _currentIndex = (_currentIndex - 1 + _flashcards.length) % _flashcards.length;
+      _currentIndex =
+          (_currentIndex - 1 + _flashcards.length) % _flashcards.length;
     });
   }
 
