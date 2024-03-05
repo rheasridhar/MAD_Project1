@@ -106,6 +106,15 @@ Future<List<Map<String, dynamic>>> queryAllFlashcardSets() async {
   );
 }
 
+Future<void> deleteFlashcard(int flashcardSetId, int flashcardId) async {
+    final db = await _db;
+    await db.delete(
+      tableFlashcards,
+      where: '$columnFlashcardSetId = ? AND $columnId = ?',
+      whereArgs: [flashcardSetId, flashcardId],
+    );
+  }
+
 Future<void> updateFlashcard(int flashcardSetId, int flashcardId, String term, String definition) async {
   final row = {
     columnTerm: term,

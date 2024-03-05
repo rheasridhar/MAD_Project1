@@ -23,6 +23,7 @@ class _EditSetScreenState extends State<EditSetScreen> {
   final TextEditingController _titleController = TextEditingController();
   final List<TextEditingController> _termControllers = [];
   final List<TextEditingController> _definitionControllers = [];
+  bool _changesSaved = true;
 
   @override
   void initState() {
@@ -31,17 +32,21 @@ class _EditSetScreenState extends State<EditSetScreen> {
   }
 
   Future<void> _loadFlashcardSet() async {
-    final flashcardSet = await widget.dbHelper.queryFlashcardSet(widget.flashcardSetId);
+    final flashcardSet =
+        await widget.dbHelper.queryFlashcardSet(widget.flashcardSetId);
 
     setState(() {
       _titleController.text = flashcardSet[DatabaseHelper.columnSetTitle];
     });
 
-    final flashcards = await widget.dbHelper.queryAllFlashcardsInSet(widget.flashcardSetId);
+    final flashcards =
+        await widget.dbHelper.queryAllFlashcardsInSet(widget.flashcardSetId);
 
     for (var flashcard in flashcards) {
-      final termController = TextEditingController(text: flashcard[DatabaseHelper.columnTerm]);
-      final definitionController = TextEditingController(text: flashcard[DatabaseHelper.columnDefinition]);
+      final termController =
+          TextEditingController(text: flashcard[DatabaseHelper.columnTerm]);
+      final definitionController = TextEditingController(
+          text: flashcard[DatabaseHelper.columnDefinition]);
 
       setState(() {
         _termControllers.add(termController);
@@ -52,68 +57,144 @@ class _EditSetScreenState extends State<EditSetScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Set'),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
+    return WillPopScope(
+      onWillPop: () => _onWillPop(context),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Edit Set'),
+          backgroundColor: const Color(0xFFCBB5F2),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
                 controller: _titleController,
                 onChanged: (value) {
-                  // Update the title controller when the text changes
                   setState(() {
-                    _titleController.text = value;
+                    _changesSaved = false;
                   });
                 },
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Title',
                   border: OutlineInputBorder(),
+                  errorText: _titleController.text.isEmpty
+                      ? 'Title is required'
+                      : null,
                 ),
               ),
-              const SizedBox(height: 20),
-              ListView.builder(
-                shrinkWrap: true,
+            ),
+            Expanded(
+              child: ListView.builder(
                 itemCount: _termControllers.length,
                 itemBuilder: (context, index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        controller: _termControllers[index],
-                        decoration: InputDecoration(
-                          labelText: 'Term ${index + 1}',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: _definitionControllers[index],
-                        decoration: InputDecoration(
-                          labelText: 'Definition ${index + 1}',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  );
+                  return _buildCard(index);
                 },
               ),
-              ElevatedButton(
-                onPressed: _addFlashcard,
-                child: const Text('Add Flashcard'),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _addFlashcard,
+                    child: const Text('Add Flashcard'),
+                  ),
+                  ElevatedButton(
+                    onPressed: (_changesSaved || _fieldsAreEmpty())
+                        ? null
+                        : () => _saveChangesAndUpdateButtonStyle(),
+                    style: (_changesSaved || _fieldsAreEmpty())
+                        ? null
+                        : ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                Color.fromARGB(255, 144, 93, 231)),
+                            foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.white),
+                          ),
+                    child: const Text('Save Changes'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveChanges,
-                child: const Text('Save Changes'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(int index) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        color: _changesSaved || _fieldsAreEmpty()
+            ? Color.fromARGB(255, 247, 239, 255)
+            : const Color.fromARGB(255, 255, 255, 255),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _termControllers[index],
+                onChanged: (value) {
+                  setState(() {
+                    _changesSaved = false;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Term',
+                  border: OutlineInputBorder(),
+                  errorText: _termControllers[index].text.isEmpty
+                      ? 'Term is required'
+                      : null,
+                  filled: true,
+                  fillColor: Color.fromARGB(255, 249, 245, 255),
+                ),
               ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _definitionControllers[index],
+                onChanged: (value) {
+                  setState(() {
+                    _changesSaved = false;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Definition',
+                  border: OutlineInputBorder(),
+                  errorText: _definitionControllers[index].text.isEmpty
+                      ? 'Definition is required'
+                      : null,
+                  filled: true,
+                  fillColor: Color.fromARGB(255, 249, 245, 255),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 187, 140, 244),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    _deleteFlashcard(index);
+                  },
+                  icon: Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                  iconSize: 24.0,
+                  padding: EdgeInsets.all(16.0),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -123,36 +204,114 @@ class _EditSetScreenState extends State<EditSetScreen> {
     setState(() {
       _termControllers.add(TextEditingController());
       _definitionControllers.add(TextEditingController());
+      _changesSaved = false;
     });
   }
 
- void _saveChanges() async {
-
-  final setTitle = _titleController.text;
-  await widget.dbHelper.updateFlashcardSet(widget.flashcardSetId, setTitle);
-
-  final flashcards = await widget.dbHelper.queryAllFlashcardsInSet(widget.flashcardSetId);
-
-  for (int i = 0; i < _termControllers.length; i++) {
-    final term = _termControllers[i].text;
-    final definition = _definitionControllers[i].text;
-
-    if (term.isNotEmpty || definition.isNotEmpty) {
-      final flashcardId = i < flashcards.length ? flashcards[i][DatabaseHelper.columnId] : null;
-
-      if (flashcardId != null) {
-        await widget.dbHelper.updateFlashcard(widget.flashcardSetId, flashcardId, term, definition);
-      } else {
-        await widget.dbHelper.insertFlashcard(widget.flashcardSetId, term, definition);
-      }
-    }
+  void _deleteFlashcard(int index) {
+    setState(() {
+      _termControllers.removeAt(index);
+      _definitionControllers.removeAt(index);
+      _changesSaved = false;
+    });
   }
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Changes saved successfully')),
-  );
+  Future<bool> _onWillPop(BuildContext context) async {
+    if (!_changesSaved && _changesMade()) {
+      return await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Discard Changes?'),
+            content:
+                const Text('Are you sure you want to leave without saving changes?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: const Text('Yes'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: const Text('No'),
+              ),
+            ],
+          );
+        },
+      ) ?? false;
+    }
+    return true;
+  }
 
-  widget.onTitleUpdated(setTitle);
-}
+  bool _changesMade() {
+    if (_titleController.text != widget.initialTitle) {
+      return true;
+    }
+    for (var i = 0; i < _termControllers.length; i++) {
+      if (_termControllers[i].text.isNotEmpty ||
+          _definitionControllers[i].text.isNotEmpty) {
+        return true;
+      }
+    }
+    return false;
+  }
 
+  bool _fieldsAreEmpty() {
+    for (int i = 0; i < _termControllers.length; i++) {
+      if (_termControllers[i].text.trim().isEmpty ||
+          _definitionControllers[i].text.trim().isEmpty) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _saveChangesAndUpdateButtonStyle() {
+    _saveChanges();
+    setState(() {
+      _changesSaved = true;
+    });
+  }
+
+  void _saveChanges() async {
+    final setTitle = _titleController.text;
+    await widget.dbHelper.updateFlashcardSet(
+        widget.flashcardSetId, setTitle);
+
+    final flashcards = await widget.dbHelper
+        .queryAllFlashcardsInSet(widget.flashcardSetId);
+
+    for (int i = 0; i < _termControllers.length; i++) {
+      final term = _termControllers[i].text;
+      final definition = _definitionControllers[i].text;
+
+      if (term.isNotEmpty || definition.isNotEmpty) {
+        final flashcardId =
+            i < flashcards.length ? flashcards[i][DatabaseHelper.columnId] : null;
+
+        if (flashcardId != null) {
+          await widget.dbHelper.updateFlashcard(
+              widget.flashcardSetId, flashcardId, term, definition);
+        } else {
+          await widget.dbHelper.insertFlashcard(
+              widget.flashcardSetId, term, definition);
+        }
+      }
+    }
+
+    for (int i = _termControllers.length; i < flashcards.length; i++) {
+      final flashcardId = flashcards[i][DatabaseHelper.columnId];
+      await widget.dbHelper
+          .deleteFlashcard(widget.flashcardSetId, flashcardId);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Changes saved successfully')),
+    );
+
+    widget.onTitleUpdated(setTitle);
+  }
 }
