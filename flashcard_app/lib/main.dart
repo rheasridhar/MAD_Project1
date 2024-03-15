@@ -48,8 +48,8 @@ class MyHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             SizedBox(
-              width: 300,
-              height: 300, 
+              width: 270,
+              height: 270, 
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -84,8 +84,8 @@ class MyHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             SizedBox(
-              width: 300, 
-              height: 300, 
+              width: 270, 
+              height: 270, 
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
