@@ -36,7 +36,7 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: const Color(0xFFC7B6EE), 
         title: Text(title),
       ),
       body: Center(
@@ -46,48 +46,76 @@ class MyHomePage extends StatelessWidget {
             const Text(
               'Welcome to Flashcard App!',
             ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const CreateSetScreen()),
-                );
-              },
-              child: const SizedBox(
-                width: double.infinity,
-                child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Center(
-                    child: Text(
-                      'Add',
-                      style: TextStyle(fontSize: 20),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: 300,
+              height: 300, 
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreateSetScreen(),
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 238, 228, 255),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30), 
                   ),
+                ),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add,
+                      size: 180, 
+                      color: Color.fromARGB(255, 94, 52, 167),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Add',
+                      style: TextStyle(fontSize: 40, color: Color.fromARGB(255, 94, 52, 167)), 
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FlashcardsScreen(dbHelper: dbHelper),
-                  ),
-                );
-              },
-              child: const SizedBox(
-                width: double.infinity,
-                child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Center(
-                    child: Text(
-                      'Study',
-                      style: TextStyle(fontSize: 20),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: 300, 
+              height: 300, 
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          FlashcardsScreen(dbHelper: dbHelper),
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 135, 89, 215),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30), 
                   ),
+                ),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.menu_book,
+                      size: 180, 
+                      color: Colors.white,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Study',
+                      style: TextStyle(fontSize: 40, color: Colors.white), 
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -97,6 +125,7 @@ class MyHomePage extends StatelessWidget {
     );
   }
 }
+
 
 /* CREATE SET SCREEN */
 class CreateSetScreen extends StatefulWidget {
