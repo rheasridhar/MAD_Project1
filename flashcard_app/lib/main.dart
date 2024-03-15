@@ -74,7 +74,7 @@ class MyHomePage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                     builder: (context) => FlashcardsScreen(dbHelper: dbHelper),
+                    builder: (context) => FlashcardsScreen(dbHelper: dbHelper),
                   ),
                 );
               },
@@ -196,6 +196,29 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
   void _saveSet() async {
     final setTitle = _titleController.text;
 
+    // Check if the title field is empty
+    if (setTitle.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a title')),
+      );
+      return;
+    }
+
+    // Check if any term or definition field is empty
+    for (int i = 0; i < _termControllers.length; i++) {
+      final term = _termControllers[i].text;
+      final definition = _definitionControllers[i].text;
+      if (term.isEmpty || definition.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Please fill all term and definition fields')),
+        );
+        return;
+      }
+    }
+
+    // All fields are filled, proceed with saving the set
+
     // First, insert the flashcard set into the database
     final flashcardSetId = await dbHelper.insertFlashcardSet(setTitle);
 
@@ -205,10 +228,12 @@ class _CreateSetScreenState extends State<CreateSetScreen> {
       final definition = _definitionControllers[i].text;
       await dbHelper.insertFlashcard(flashcardSetId, term, definition);
     }
+
     // Redirect to FlashcardsScreen
     Navigator.pushReplacement(
       context,
-     MaterialPageRoute(builder: (context) => FlashcardsScreen(dbHelper: dbHelper)),
+      MaterialPageRoute(
+          builder: (context) => FlashcardsScreen(dbHelper: dbHelper)),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
