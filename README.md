@@ -1,8 +1,7 @@
 # MAD_Project1
+## Presentation Link: https://www.youtube.com/watch?v=NBLP3Zz4Lt8
 
-# Presentation Link: https://www.youtube.com/watch?v=NBLP3Zz4Lt8
-
-Welcome to our Flashcard Quiz Game project!
+## Welcome to our Flashcard Quiz Game project!
 
 This application is designed to provide users with a convenient, interactive, and portable platform to study through flashcards. By modernizing the traditional flashcard studying method, our app aims to make studying more accessible and engaging for students of all levels.
 
