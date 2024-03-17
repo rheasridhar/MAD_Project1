@@ -33,5 +33,5 @@ Alternatively, you can use an Android emulator:
 5. Once installed, open the Flashcard Quiz Game app from the emulator's app drawer.
 
 # Contributers: 
-Ben Nguyen
+Ben Nguyen, 
 Rhea Sridhar
